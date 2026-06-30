@@ -1,0 +1,39 @@
+{
+  "name": "shwe_exchange",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "prettier": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HtetWaiYanAung74/shwe_exchange.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/HtetWaiYanAung74/shwe_exchange/issues"
+  },
+  "homepage": "https://github.com/HtetWaiYanAung74/shwe_exchange#readme",
+  "devDependencies": {
+    "@cucumber/cucumber": "^13.0.0",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.3",
+    "dotenv": "^17.4.2",
+    "imapflow": "^1.4.2",
+    "mailparser": "^3.9.11",
+    "otplib": "^13.4.1",
+    "playwright": "^1.60.0",
+    "prettier": "^3.8.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@supabase/server": "^1.2.0",
+    "@supabase/supabase-js": "^2.108.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2025",
+    "esModuleInterop": true,
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node", "@cucumber/cucumber", "@playwright/test"],
+    "sourceMap": true,
+  },
+  "include": ["src/tests/**/*.ts"],
+}
