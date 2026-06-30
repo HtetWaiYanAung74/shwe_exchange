@@ -10,15 +10,17 @@ setDefaultTimeout(60 * 1000);
 let mmkBuy: string, mmkSell: string, vndBuy: string, vndSell: string;
 
 Before(async function(this: CustomWorld) {
-    this.browser = await chromium.launch({headless: true});
-
+    this.browser = await chromium.launch({headless: false});
+    
     // Check if the saved login session exists
     if (fs.existsSync('binance-auth.json')) {
         // Inject the saved cookies/tokens to bypass the login image puzzle
-        this.page = await this.browser.newPage({ storageState: 'binance-auth.json' });
+        this.context = await this.browser.newContext({ storageState: 'binance-auth.json' });
     } else {
         throw new Error("Missing binance-auth.json! Run capture-session.js first.");
     }
+
+    this.page = await this.context.newPage();
 });
 
 Given('The user already logged in to the Binance website', async function(this: CustomWorld) {
