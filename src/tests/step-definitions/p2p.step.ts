@@ -10,7 +10,7 @@ setDefaultTimeout(60 * 1000);
 let mmkBuy: string, mmkSell: string, vndBuy: string, vndSell: string;
 
 Before(async function(this: CustomWorld) {
-    this.browser = await chromium.launch({headless: false});
+    this.browser = await chromium.launch({headless: true});
 
     // Check if the saved login session exists
     if (fs.existsSync('binance-auth.json')) {
