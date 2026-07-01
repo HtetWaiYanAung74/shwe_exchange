@@ -47,11 +47,15 @@ When('The user hovers the TRADE header menu item', async function (this: CustomW
 
 When('The user clicks the {string} sub item', async function (this: CustomWorld, subItem: string) {
     await this.page.locator('.header-dropdown-menu.header-menu-align_frist #ba-titile2-1').click();
-    await this.page.waitForLoadState();
+    await this.page.waitForSelector('.bn-tabs__segment-outline', { state: 'visible', timeout: 15000 });
+    await this.page.waitForLoadState('networkidle');
 });
 
 Then('The following tabs are displayed', async function (this: CustomWorld, dataTable: DataTable) {
-    const tabNames = await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').allTextContents();
+    // Locate tabs (use role if available) and wait for at least one tab
+    const tabsLocator = this.page.locator('.bn-tabs__segment-outline').getByRole('tab');
+    await tabsLocator.first().waitFor({ state: 'visible', timeout: 10000 });
+    const tabNames = await tabsLocator.allTextContents();
     const rows = dataTable.rows();
     for (let i = 0; i < rows.length; i++) {
         expect(tabNames[i]).toBe(rows[i][0]);
