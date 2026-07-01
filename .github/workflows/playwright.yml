@@ -30,8 +30,8 @@ jobs:
       - name: Install Playwright Chrome Browser
         run: npx playwright install chromium --with-deps
 
-      - name: Run tests (with X virtual framebuffer)
-        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x720x24' npm test
+      - name: Run Playwright tests
+        run: npm run test
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
