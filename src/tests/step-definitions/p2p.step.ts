@@ -10,7 +10,7 @@ setDefaultTimeout(60 * 1000);
 let mmkBuy: string, mmkSell: string, vndBuy: string, vndSell: string;
 
 Before(async function(this: CustomWorld) {
-    this.browser = await chromium.launch({headless: false});
+    this.browser = await chromium.launch({headless: true});
     
     // Check if the saved login session exists
     if (fs.existsSync('binance-auth.json')) {
@@ -24,19 +24,19 @@ Before(async function(this: CustomWorld) {
 });
 
 Given('The user already logged in to the Binance website', async function(this: CustomWorld) {
-    await this.page.goto(config.baseUrl, {timeout: 10000});
+    await this.page.goto(config.baseUrl);
+    await this.page.waitForLoadState();
     await this.page.getByRole('button', { name: 'Reject Additional Cookies' }).click();
     await this.page.getByRole('button', {name: "Ignore", exact: true}).click();
 });
 
 When('The user hovers the TRADE header menu item', async function (this: CustomWorld) {
     await this.page.locator('.header-dropdown-menu.header-menu-align_frist').hover();
-    await this.page.waitForTimeout(5000);
 });
 
 When('The user clicks the {string} sub item', async function (this: CustomWorld, subItem: string) {
     await this.page.locator('.header-dropdown-menu.header-menu-align_frist #ba-titile2-1').click();
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForLoadState();
 });
 
 Then('The following tabs are displayed', async function (this: CustomWorld, dataTable: DataTable) {
@@ -48,9 +48,12 @@ Then('The following tabs are displayed', async function (this: CustomWorld, data
 });
 
 When('The user selects {string} for currency, enters {string} for amount and selects for payment', async function (this: CustomWorld, currency: string, amount: string) {
-    await this.page.getByRole('combobox').first().hover({timeout: 10000});
+    await this.page.getByRole('combobox').first().waitFor({state: 'visible', timeout: 5000});
+    await this.page.getByRole('combobox').first().hover();
     const activeLocator = this.page.locator('.active');
+    await activeLocator.getByPlaceholder('Search').waitFor({state: 'visible', timeout: 5000});
     await activeLocator.getByPlaceholder('Search').fill(currency, {timeout: 10000});
+    await activeLocator.getByRole('option', { name: currency }).waitFor({state: 'visible', timeout: 5000});
     await activeLocator.getByRole('option', { name: currency }).click({timeout: 10000});
     if (currency == 'MMK') {
         await this.page.getByPlaceholder(amount).fill('1000000', {timeout: 10000});
@@ -58,16 +61,18 @@ When('The user selects {string} for currency, enters {string} for amount and sel
         await this.page.getByPlaceholder(amount).clear({timeout: 10000});
         await this.page.getByPlaceholder(amount).fill('20000000', {timeout: 10000});
     }
-    await this.page.getByRole('combobox').nth(1).hover({timeout: 10000});
+    await this.page.getByRole('combobox').nth(1).hover();
+    await activeLocator.getByRole('checkbox', { checked: false }).first().waitFor({state: 'visible', timeout: 10000});
     await activeLocator.getByRole('checkbox', { checked: false }).first().click({timeout: 10000});
 });
 
 Then('The user saves the very first shown {string} buy and sell rate in database', async function (this: CustomWorld, currency: string) {
     if (currency == 'VND') {
-        await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').first().click();
+        await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').first().click({timeout: 10000});
     }
     const notPromotedRow = this.page.getByRole('row').nth(3);
     const notPromotedCol = notPromotedRow.getByRole('cell').nth(2);
+    await notPromotedCol.locator('.text-primaryText').waitFor({state: 'visible', timeout: 10000});	
     const buyPrice = await notPromotedCol.locator('.text-primaryText').textContent();
     currency == 'MMK' ? mmkBuy = buyPrice : vndBuy = buyPrice;
     console.log('buy mmk rate ....', mmkBuy);
