@@ -10,7 +10,10 @@ setDefaultTimeout(60 * 1000);
 let mmkBuy: string, mmkSell: string, vndBuy: string, vndSell: string;
 
 Before(async function(this: CustomWorld) {
-    this.browser = await chromium.launch({headless: false});
+    this.browser = await chromium.launch({
+        headless: true, // run headless on CI (no X server required)
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
     
     // Check if the saved login session exists
     if (fs.existsSync('binance-auth.json')) {
@@ -52,7 +55,7 @@ When('The user selects {string} for currency, enters {string} for amount and sel
     const activeLocator = this.page.locator('.active');
     await activeLocator.getByPlaceholder('Search').fill(currency, {timeout: 10000});
     await activeLocator.getByRole('option', { name: currency }).click({timeout: 10000});
-    if (currency = 'MMK') {
+    if (currency == 'MMK') {
         await this.page.getByPlaceholder(amount).fill('1000000', {timeout: 10000});
     } else {
         await this.page.getByPlaceholder(amount).clear({timeout: 10000});
@@ -98,5 +101,19 @@ Then('The user saves the very first shown {string} buy and sell rate in database
 });
 
 After(async function (this: CustomWorld) {
-    await this.browser.close();
-})
+    try {
+        if (this.page && !this.page.isClosed()) await this.page.close();
+    } catch (e) {
+        console.warn('page close failed', e);
+    }
+    try {
+        if (this.context) await this.context.close();
+    } catch (e) {
+        console.warn('context close failed', e);
+    }
+    try {
+        if (this.browser) await this.browser.close();
+    } catch (e) {
+        console.warn('browser close failed', e);
+    }
+});
