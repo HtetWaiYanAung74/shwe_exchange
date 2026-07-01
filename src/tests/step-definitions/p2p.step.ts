@@ -1,6 +1,7 @@
 import fs from "fs";
 import { After, Before, DataTable, Given, setDefaultTimeout, Then, When } from "@cucumber/cucumber";
 import { chromium, expect } from "@playwright/test";
+import { parsePrice } from "../utils/common";
 import config from "../utils/config";
 import { supabase } from "../utils/supabase";
 import { CustomWorld } from "../utils/world";
@@ -63,27 +64,27 @@ Then('The following tabs are displayed', async function (this: CustomWorld, data
 });
 
 When('The user selects {string} for currency, enters {string} for amount and selects for payment', async function (this: CustomWorld, currency: string, amount: string) {
-    await this.page.getByRole('combobox').first().waitFor({state: 'visible', timeout: 5000});
+    await this.page.getByRole('combobox').first().waitFor({state: 'visible', timeout: 10000});
     await this.page.getByRole('combobox').first().hover();
     const activeLocator = this.page.locator('.active');
-    await activeLocator.getByPlaceholder('Search').waitFor({state: 'visible', timeout: 5000});
-    await activeLocator.getByPlaceholder('Search').fill(currency, {timeout: 10000});
-    await activeLocator.getByRole('option', { name: currency }).waitFor({state: 'visible', timeout: 5000});
-    await activeLocator.getByRole('option', { name: currency }).click({timeout: 10000});
+    await activeLocator.getByPlaceholder('Search').waitFor({state: 'visible', timeout: 10000});
+    await activeLocator.getByPlaceholder('Search').fill(currency, {timeout: 15000});
+    await activeLocator.getByRole('option', { name: currency }).waitFor({state: 'visible', timeout: 10000});
+    await activeLocator.getByRole('option', { name: currency }).click({timeout: 15000});
     if (currency == 'MMK') {
-        await this.page.getByPlaceholder(amount).fill('1000000', {timeout: 10000});
+        await this.page.getByPlaceholder(amount).fill('1000000', {timeout: 15000});
     } else {
-        await this.page.getByPlaceholder(amount).clear({timeout: 10000});
-        await this.page.getByPlaceholder(amount).fill('20000000', {timeout: 10000});
+        await this.page.getByPlaceholder(amount).clear({timeout: 15000});
+        await this.page.getByPlaceholder(amount).fill('20000000', {timeout: 15000});
     }
     await this.page.getByRole('combobox').nth(1).hover();
     await activeLocator.getByRole('checkbox', { checked: false }).first().waitFor({state: 'visible', timeout: 10000});
-    await activeLocator.getByRole('checkbox', { checked: false }).first().click({timeout: 10000});
+    await activeLocator.getByRole('checkbox', { checked: false }).first().click({timeout: 15000});
 });
 
 Then('The user saves the very first shown {string} buy and sell rate in database', async function (this: CustomWorld, currency: string) {
     if (currency == 'VND') {
-        await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').first().click({timeout: 10000});
+        await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').first().click({timeout: 15000});
     }
     const notPromotedRow = this.page.getByRole('row').nth(3);
     const notPromotedCol = notPromotedRow.getByRole('cell').nth(2);
@@ -94,7 +95,10 @@ Then('The user saves the very first shown {string} buy and sell rate in database
     console.log('buy vnd rate ....', vndBuy);
 
     await this.page.locator('.bn-tabs__segment-outline').getByRole('tab').last().click();
-    const sellPrice = await notPromotedCol.locator('.text-primaryText').textContent();
+    const notPromotedRowAfter = this.page.getByRole('row').nth(3);
+    const notPromotedColAfter = notPromotedRowAfter.getByRole('cell').nth(2);
+    await notPromotedColAfter.locator('.text-primaryText').waitFor({ state: 'visible', timeout: 10000 });
+    const sellPrice = await notPromotedColAfter.locator('.text-primaryText').textContent();
     currency == 'MMK' ? mmkSell = sellPrice : vndSell = sellPrice;
     console.log('sell mmk rate ....', mmkSell);
     console.log('sell vnd rate ....', vndSell);
@@ -102,10 +106,10 @@ Then('The user saves the very first shown {string} buy and sell rate in database
     if (currency == 'VND') {
         const {data, error} = await supabase.from('p2p_rates').insert([
             {
-                mmk_buy_price: Number(mmkBuy.replace(/,/g, '')),
-                mmk_sell_price: Number(mmkSell.replace(/,/g, '')),
-                vnd_buy_price: Number(vndBuy.replace(/,/g, '')),
-                vnd_sell_price: Number(vndSell.replace(/,/g, ''))
+                mmk_buy_price: parsePrice(mmkBuy),
+                mmk_sell_price: parsePrice(mmkSell),
+                vnd_buy_price: parsePrice(vndBuy),
+                vnd_sell_price: parsePrice(vndSell)
             }
         ]);
 
