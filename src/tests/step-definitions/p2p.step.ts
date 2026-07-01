@@ -26,8 +26,19 @@ Before(async function(this: CustomWorld) {
 Given('The user already logged in to the Binance website', async function(this: CustomWorld) {
     await this.page.goto(config.baseUrl);
     await this.page.waitForLoadState();
-    await this.page.getByRole('button', { name: 'Reject Additional Cookies' }).click();
-    await this.page.getByRole('button', {name: "Ignore", exact: true}).click();
+    
+    // Try to reject cookies if the button exists, but don't fail if it doesn't
+    try {
+        await this.page.getByRole('button', { name: 'Reject Additional Cookies' }).click({ timeout: 5000 });
+    } catch (e) {
+        console.log('Reject cookies button not found, proceeding...');
+    }
+    
+    try {
+        await this.page.getByRole('button', {name: "Ignore", exact: true}).click({ timeout: 5000 });
+    } catch (e) {
+        console.log('Ignore button not found, proceeding...');
+    }
 });
 
 When('The user hovers the TRADE header menu item', async function (this: CustomWorld) {
